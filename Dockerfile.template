@@ -1,0 +1,37 @@
+FROM resin/%%RESIN_MACHINE_NAME%%-debian as builder
+
+RUN apt-get update &&\
+  apt-get install -y \
+    cmake \
+    g++ \
+    gcc \
+    make \
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /builder/
+COPY ./builder/ /builder/
+
+# All binaries SHOULD end up in /usr/local/
+
+RUN wiringPi/build
+
+RUN cd InertialSenseSDK/InertialSenseCLTool &&\
+  mkdir build &&\
+  cd build &&\
+  cmake .. &&\
+  make &&\
+  mv ./bin/cltool /usr/lib/cltool
+
+#  usermod -a -G dialout $USER
+#  usermod -a -G plugdev $USER
+
+RUN cd candump &&\
+  make candump &&\
+  make install
+
+FROM resin/%%RESIN_MACHINE_NAME%%-debian
+
+COPY --from=builder /urs/local/ /usr/local/
+
+WORKDIR /usr/scr/app
+COPY ./scripts/ /usr/src/app/
