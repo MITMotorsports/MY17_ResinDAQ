@@ -23,7 +23,7 @@ RUN cd InertialSenseSDK/InertialSenseCLTool &&\
 #  usermod -a -G dialout $USER
 #  usermod -a -G plugdev $USER
 
-RUN cd candump &&\
+RUN cd can-utils &&\
   make candump &&\
   make install
 
