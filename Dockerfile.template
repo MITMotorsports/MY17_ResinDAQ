@@ -13,8 +13,6 @@ COPY ./builder/ /builder/
 
 # All binaries SHOULD end up in /usr/local/
 
-RUN wiringPi/build
-
 RUN cd InertialSenseSDK/InertialSenseCLTool &&\
   mkdir build &&\
   cd build &&\
