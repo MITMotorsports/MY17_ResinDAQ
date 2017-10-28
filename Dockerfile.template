@@ -20,12 +20,15 @@ RUN cd InertialSenseSDK/InertialSenseCLTool &&\
   make -j$(nproc) &&\
   mv ./bin/cltool /usr/local/bin/cltool
 
-RUN ls InertialSenseSDK/InertialSenseCLTool/build && echo "GAP" && ls /usr/local
-
 #  usermod -a -G dialout $USER
 #  usermod -a -G plugdev $USER
 
-FROM resin/%%RESIN_MACHINE_NAME%%-node:8
+FROM resin/%%RESIN_MACHINE_NAME%%-python
+
+RUN apt-get update &&\
+  apt-get install -y \
+    python3-rpi.gpio
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /usr/local/ /usr/local/
 
