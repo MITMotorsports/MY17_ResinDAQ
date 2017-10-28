@@ -17,7 +17,7 @@ RUN cd InertialSenseSDK/InertialSenseCLTool &&\
   mkdir build &&\
   cd build &&\
   cmake .. &&\
-  make &&\
+  make -j$(nproc) &&\
   mv ./bin/cltool /usr/lib/cltool
 
 #  usermod -a -G dialout $USER
