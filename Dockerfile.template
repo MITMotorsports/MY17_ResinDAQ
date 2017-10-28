@@ -18,18 +18,20 @@ RUN cd InertialSenseSDK/InertialSenseCLTool &&\
   cd build &&\
   cmake .. &&\
   make -j$(nproc) &&\
-  mv ./bin/cltool /usr/lib/cltool
+  mv ./bin/cltool /usr/local/bin/cltool
+
+RUN ls InertialSenseSDK/InertialSenseCLTool/build && echo "GAP" && ls /usr/local
 
 #  usermod -a -G dialout $USER
 #  usermod -a -G plugdev $USER
 
-RUN cd can-utils &&\
-  make candump &&\
-  make install
+FROM resin/%%RESIN_MACHINE_NAME%%-node:8
 
-FROM resin/%%RESIN_MACHINE_NAME%%-debian
-
-COPY --from=builder /urs/local/ /usr/local/
+COPY --from=builder /usr/local/ /usr/local/
 
 WORKDIR /usr/scr/app
 COPY ./scripts/ /usr/src/app/
+
+ENV INITSYSTEM on
+
+CMD ["/bin/bash"]
