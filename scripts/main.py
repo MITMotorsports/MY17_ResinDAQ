@@ -13,21 +13,12 @@ import sys
 
 from time import sleep
 from pySDK.inertialsensemodule import InertialSense, pyUpdateFlashConfig
-from pySDK.display import cInertialSenseDisplay
 from pySDK.logger import cISLogger
 import pySDK.isutilities as util
 
 # TODO: Make Defaults, Definitions and Member Variables available directly from C++ or put them in another python module
 IS_COM_BAUDRATE_DEFAULT = 3000000
 DEFAULT_LOGS_DIRECTORY = "IS_logs"
-DMODE_PRETTY = 0
-DMODE_SCROLL = 1
-DMODE_STATS = 2
-DMODE_QUITE = 3
-
-def main():
-    display = cInertialSenseDisplay()
-    cltool_main()
 
 def cltool_dataCallback(data):
 
@@ -94,16 +85,12 @@ def cltool_dataCallback(data):
 
 def cltool_main(comPort):
     baudRate=IS_COM_BAUDRATE_DEFAULT
-    #clear display
-    display.SetDisplayMode(False);
-    display.Clear();
 
     # open the device, start streaming data and logging
 
     # [COMM INSTRUCTION] 1.) Create InertialSense object and open serial port. if reading/writing flash config, don't bother with data callback
     inertialSenseInterface = InertialSense()
     inertialSenseInterface.SetPyCallback(self.cltool_dataCallback)
-    inertialSenseInterface.SetPyDisplay(display)
     if not inertialSenseInterface.Open(comPort, baudRate):
         raise RuntimeWarning("Failed to open serial port at {} - {}".format(comPort, baudRate)
 
@@ -117,10 +104,6 @@ def cltool_main(comPort):
         while True:
             # [COMM INSTRUCTION] 3.) Process data and messages
             inertialSenseInterface.Update();
-            if inertialSenseInterface.GetTcpByteCount() != 0:
-                display.GoToRow(1);
-                print("Tcp bytes read: {}".format(inertialSenseInterface.GetTcpByteCount()))
-
             # Specify the minimum time between read/write updates.
             sleep(.001);
 
@@ -194,6 +177,3 @@ def __cltool_setupLogger():
         self.opts.maxLogMemory, # logger will try and keep under this amount of memory
         self.opts.useLogTimestampSubFolder # whether to place log files in a new sub-folder with the current timestamp as the folder name
     )
-
-if __name__ == "__main__":
-    main()
