@@ -11,33 +11,42 @@ RUN apt-get update &&\
 
 WORKDIR /builder/
 
-# All binaries SHOULD end up in /usr/local/
+# All path binaries SHOULD end up in /usr/local/
 
+# Get InertialSenseCLTool
 RUN git clone https://github.com/inertialsense/InertialSenseSDK.git &&\
-  cd InertialSenseSDK/InertialSenseCLTool &&\
+  cd InertialSenseSDK &&\
+  git reset --hard 1.1.3 &&\
+  cd InertialSenseCLTool &&\
   mkdir build &&\
   cd build &&\
   cmake .. &&\
   make -j$(nproc) &&\
   mv ./bin/cltool /usr/local/bin/cltool
 
+# Get wiringPi
+RUN git clone git://git.drogon.net/wiringPi wiringPi &&\
+  cd wiringPi &&\
+  ./build
+
+COPY ./scripts/btnmgr/ /builder/btnmgr
+RUN cd /builder/btnmgr &&\
+  g++ -Wall -o btnmgr main.cpp -lwiringPi &&\
+  mv btnmgr /usr/local/bin/
+
 #  usermod -a -G dialout $USER
 #  usermod -a -G plugdev $USER
 
-FROM resin/%%RESIN_MACHINE_NAME%%-python
+FROM resin/%%RESIN_MACHINE_NAME%%-debian
 
-RUN apt-get update &&\
-  apt-get install -y \
-    python3-rpi.gpio
-  && apt-get clean && rm -rf /var/lib/apt/lists/*
+WORKDIR /usr/src/app/
 
 COPY --from=builder /usr/local/ /usr/local/
+COPY --from=builder /usr/lib/libwiringPi* /usr/lib/
 
-WORKDIR /usr/scr/app/
-COPY ./scripts/ /usr/src/app/
-
-# RUN git clone https://github.com/MITMotorsports/pythonCAN.git
+COPY ./bin/ /usr/local/bin/
+COPY ./app/ /usr/src/app/
 
 ENV INITSYSTEM on
 
-CMD ["/usr/src/app/start.sh"]
+CMD ./start.sh
